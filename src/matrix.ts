@@ -1,6 +1,7 @@
 export type Shape = 'circle' | 'square' | 'rounded';
 
 export type MatrixOptions = {
+    canvas: HTMLCanvasElement;
     dotSize?: number;
     gap?: number;
     shape?: Shape;
@@ -10,19 +11,14 @@ export type MatrixOptions = {
     onResize?: (cols: number, rows: number) => void;
 };
 
-// Mirrors the ResponsiveCanvas + Renderer architecture from the canvas grid:
-// - cell-based grid sized to fill the window
-// - DPR-aware canvas dimensions
-// - per-dot dirty tracking so only changed dots are repainted
-// - requestAnimationFrame-coalesced render scheduling
-export function MatrixDisplay(canvas: HTMLCanvasElement, options: MatrixOptions = {}) {
-    const dotSize = options.dotSize ?? 10;
-    const gap = options.gap ?? 3;
+export function MatrixDisplay(options: MatrixOptions) {
+    const canvas = options.canvas;
+    const dotSize = options.dotSize ?? 12;
+    const gap = options.gap ?? 4;
     const shape = options.shape ?? 'circle';
-    const onColor = options.onColor ?? '#ffb000';
-    const offColor = options.offColor ?? '#1a1200';
-    const bg = options.background ?? '#0a0800';
-
+    const onColor = options.onColor ?? '#000000';
+    const offColor = options.offColor ?? '#ffffff';
+    const bg = options.background ?? '#ffffff';
     const cellSize = dotSize + gap;
     const radius = dotSize / 2;
     const ctx = canvas.getContext('2d')!;
@@ -47,13 +43,12 @@ export function MatrixDisplay(canvas: HTMLCanvasElement, options: MatrixOptions 
 
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-        dots = Array.from({ length: rows }, (_, r) =>
-            Array.from({ length: cols }, (_, c) => dots[r]?.[c] ?? false),
-        );
+        dots = Array.from({ length: rows }, (_, r) => Array.from({ length: cols }, (_, c) => dots[r]?.[c] ?? false));
         prevDots = Array.from({ length: rows }, () => new Array<boolean>(cols).fill(false));
         allDirty = true;
 
         options.onResize?.(cols, rows);
+
         scheduleRender();
     }
 
@@ -66,7 +61,6 @@ export function MatrixDisplay(canvas: HTMLCanvasElement, options: MatrixOptions 
         // Fill cell area (covers the gap between dots)
         ctx.fillStyle = bg;
         ctx.fillRect(x, y, cellSize, cellSize);
-
         ctx.fillStyle = on ? onColor : offColor;
 
         if (shape === 'circle') {
@@ -88,8 +82,10 @@ export function MatrixDisplay(canvas: HTMLCanvasElement, options: MatrixOptions 
         for (let r = 0; r < rows; r++) {
             for (let c = 0; c < cols; c++) {
                 const on = dots[r][c];
+
                 if (allDirty || on !== prevDots[r][c]) {
                     paintDot(c, r, on);
+
                     prevDots[r][c] = on;
                 }
             }
@@ -100,34 +96,43 @@ export function MatrixDisplay(canvas: HTMLCanvasElement, options: MatrixOptions 
 
     function scheduleRender(): void {
         if (rafId !== null) return;
+
         rafId = requestAnimationFrame(flush);
     }
 
     window.addEventListener('resize', resize);
+
     resize();
 
     return {
-        get cols(): number { return cols; },
-        get rows(): number { return rows; },
+        get cols(): number {
+            return cols;
+        },
+        get rows(): number {
+            return rows;
+        },
 
         get(x: number, y: number): boolean {
             if (x < 0 || x >= cols || y < 0 || y >= rows) return false;
+
             return dots[y][x];
         },
 
         set(x: number, y: number, on: boolean): void {
             if (x < 0 || x >= cols || y < 0 || y >= rows) return;
+
             dots[y][x] = on;
+
             scheduleRender();
         },
 
         toggle(x: number, y: number): void {
             if (x < 0 || x >= cols || y < 0 || y >= rows) return;
+
             dots[y][x] = !dots[y][x];
+
             scheduleRender();
         },
-
-        // Fill from a 2D array or a per-dot function
         fill(arg: boolean[][] | ((col: number, row: number) => boolean)): void {
             if (typeof arg === 'function') {
                 for (let r = 0; r < rows; r++) {
@@ -142,17 +147,24 @@ export function MatrixDisplay(canvas: HTMLCanvasElement, options: MatrixOptions 
                     }
                 }
             }
+
             scheduleRender();
         },
 
         clear(): void {
-            for (let r = 0; r < rows; r++) dots[r].fill(false);
+            for (let r = 0; r < rows; r++) {
+                dots[r].fill(false);
+            }
+
             scheduleRender();
         },
 
         destroy(): void {
             window.removeEventListener('resize', resize);
-            if (rafId !== null) cancelAnimationFrame(rafId);
+
+            if (rafId !== null) {
+                cancelAnimationFrame(rafId);
+            }
         },
     };
 }

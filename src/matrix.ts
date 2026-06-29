@@ -58,7 +58,6 @@ export function MatrixDisplay(options: MatrixOptions) {
         const dotX = x + gap / 2;
         const dotY = y + gap / 2;
 
-        // Fill cell area (covers the gap between dots)
         ctx.fillStyle = bg;
         ctx.fillRect(x, y, cellSize, cellSize);
         ctx.fillStyle = on ? onColor : offColor;

@@ -2,10 +2,10 @@ import './style.scss';
 
 type Shape = 'circle' | 'rounded' | 'square';
 
-// const PADDING = 2;
-// const DOT_SIZE = 12;
-// const GAP = 2;
-const PADDING = 1;
+
+const PADDING = 0;
+const CANVAS_PADDING_TOP = 2;
+const CANVAS_PADDING_BOTTOM = 2;
 const DOT_SIZE = 12;
 const GAP = 2;
 const GLYPH_PADDING_LEFT = 1;
@@ -22,7 +22,6 @@ const CELL_SIZE = DOT_SIZE + GAP;
 const RADIUS = DOT_SIZE / 2;
 const SHAPE: Shape = 'square';
 const ON_COLOR = '#000000';
-// const OFF_COLOR = '#ffffff';
 const OFF_COLOR = '#eeeeee';
 const BACKGROUND = '#ffffff';
 
@@ -815,12 +814,14 @@ render();
 
 function buildBuffer(): boolean[][] {
     const buffer: boolean[][] = [];
+    const longestLine = Math.max(...TEXT.map(l => l.length));
+    const numberOfColumnsToRender = longestLine * GLYPH_WIDTH
+    const numberOfLinesToRender = GLYPH_HEIGHT * TEXT.length + CANVAS_PADDING_BOTTOM + CANVAS_PADDING_BOTTOM;
 
-    for (let i = 0; i < GLYPH_HEIGHT * TEXT.length + ((GLYPH_GAP_Y || 1) * TEXT.length - 1); i++) {
+    for (let i = 0; i < numberOfLinesToRender; i++) {
         buffer[i] = [];
 
-        // replace TEXT[0] with Math.max(...TEXT)?
-        for (let j = 0; j < TEXT[0].length * (GLYPH_WIDTH + 1); j++) {
+        for (let j = 0; j < numberOfColumnsToRender; j++) {
             buffer[i][j] = false;
         }
     }
@@ -845,16 +846,23 @@ function buildBuffer(): boolean[][] {
 
 function render(): void {
     const buffer = buildBuffer();
-
+    const minCols = Math.floor(window.innerWidth / CELL_SIZE) - PADDING;
+    const minRows = Math.floor(window.innerHeight / CELL_SIZE) - PADDING;
     const dpr = window.devicePixelRatio || 1;
 
-    cols = Math.floor(window.innerWidth / CELL_SIZE) - PADDING;
-    rows = Math.floor(window.innerHeight / CELL_SIZE) - PADDING;
+    cols = Math.max(buffer[0].length, minCols);
+    rows = Math.max(buffer.length, minRows);
 
     canvas.width = cols * CELL_SIZE * dpr;
     canvas.height = rows * CELL_SIZE * dpr;
     canvas.style.width = `${cols * CELL_SIZE}px`;
     canvas.style.height = `${rows * CELL_SIZE}px`;
+
+
+    // canvas.width = cols * CELL_SIZE * dpr;
+    // canvas.height = rows * CELL_SIZE * dpr;
+    // canvas.style.width = `${cols * CELL_SIZE}px`;
+    // canvas.style.height = `${rows * CELL_SIZE}px`;
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
@@ -867,6 +875,10 @@ function render(): void {
     }
 
     draw();
+
+    // set all margins to same value as computed left and right
+    const margin = getComputedStyle(canvas).marginLeft;
+    canvas.style.margin = margin;
 }
 
 function draw() {

@@ -65,7 +65,7 @@ const EMPTY_COLOR = '#eeeeee';
 const BACKGROUND = '#ffffff';
 const TEXT = [
     '─│┐┌┘└',     // Box drawing
-    '012345689',  // Numbers
+    '0123456789',  // Numbers
     'ABCDEFGHIJ', // Uppercase
     'KLMNOPQRST',
     'UVWXYZ',
@@ -94,7 +94,7 @@ function render(): void {
         height: 10
     })
 
-    const { rows, cols } = setup({ buffer })
+    const { rows, cols } = setup({ buffer });
 
     draw({ buffer, cols, rows });
 }
@@ -126,7 +126,7 @@ function draw({ buffer, rows, cols }: DrawProps) {
             paint({
                 col,
                 row,
-                cell: buffer[row][col]
+                cell: buffer[row]?.[col]
             });
         }
     }
@@ -140,6 +140,13 @@ function paint({ row, col, cell }: PaintProps) {
 
     ctx.fillStyle = BACKGROUND;
     ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE);
+
+    if (!cell) {
+        ctx.fillStyle = EMPTY_COLOR;
+        ctx.fillRect(dotX, dotY, DOT_SIZE, DOT_SIZE);
+
+        return;
+    }
 
     ctx.fillStyle = cell.color;
 

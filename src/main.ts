@@ -4,13 +4,13 @@ type Shape = 'circle' | 'rounded' | 'square';
 
 type Buffer = (number | boolean)[][];
 
+const DOT_SIZE = 12;
+const GAP = 2;
 const PADDING = 0;
 const CANVAS_PADDING_TOP = 2;
 const CANVAS_PADDING_BOTTOM = 2;
 const CANVAS_PADDING_LEFT = 2;
 const CANVAS_PADDING_RIGHT = 2;
-const DOT_SIZE = 12;
-const GAP = 2;
 const GLYPH_PADDING_LEFT = 1;
 const GLYPH_PADDING_RIGHT = 1;
 const GLYPH_ASCENDER_HEIGHT = 3;
@@ -25,6 +25,9 @@ const CELL_SIZE = DOT_SIZE + GAP;
 const RADIUS = DOT_SIZE / 2;
 const SHAPE: Shape = 'square';
 const PIXEL_COLOR = '#000000';
+// const CELL_COLOR = '#ffffff';
+// const EMPTY_COLOR = '#ffffff';
+// const BACKGROUND = '#ffffff';
 const CELL_COLOR = '#cccccc';
 const EMPTY_COLOR = '#eeeeee';
 const BACKGROUND = '#ffffff';

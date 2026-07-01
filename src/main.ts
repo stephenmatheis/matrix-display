@@ -58,21 +58,20 @@ const GLYPH_GAP_X = 1;
 const GLYPH_GAP_Y = 1;
 const CELL_SIZE = DOT_SIZE + GAP;
 const RADIUS = DOT_SIZE / 2;
-const SHAPE: Shape = 'square';
 const PIXEL_COLOR = '#000000';
 const CELL_COLOR = '#cccccc';
 const EMPTY_COLOR = '#eeeeee';
 const BACKGROUND = '#ffffff';
 const TEXT = [
-    '─│┐┌┘└',     // Box drawing
-    '0123456789',  // Numbers
-    'ABCDEFGHIJ', // Uppercase
+    '─│┐┌┘└',     // box drawing
+    '0123456789', // numbers
+    'ABCDEFGHIJ', // uppercase
     'KLMNOPQRST',
     'UVWXYZ',
-    'abcdefghij', // Lowercase
+    'abcdefghij', // lowercase
     'klmnopqrst',
     'uvwxyz',
-    '.,:;!?·•*#', // Punctuation
+    '.,:;!?·•*#', // punctuation
     '/\\-–―_(){}',
     '[]"\'@|$%+=',
     '><',
@@ -88,15 +87,65 @@ function render(): void {
 
     buffer = Box({
         buffer,
-        x: 3,
+        x: 2,
         y: 2,
         width: 10,
         height: 10
-    })
+    });
 
     const { rows, cols } = setup({ buffer });
 
     draw({ buffer, cols, rows });
+
+    // animation
+    const STEPS = 10;
+    const STEPS_PER_SECOND = 2; // speed knob: 1 = 1 step/sec, 2 = 1 step/500ms, etc.
+    const INTERVAL = 1000 / STEPS_PER_SECOND;
+
+    let startTime: number | null = null;
+    let lastStep = -1;
+    let frame: number;
+
+    function animate(timestamp: number) {
+        if (startTime === null) {
+            startTime = timestamp;
+        }
+
+        const step = Math.floor((timestamp - startTime) / INTERVAL);
+
+        if (step > STEPS) {
+            cancelAnimationFrame(frame);
+
+            return;
+        }
+
+        if (step !== lastStep) {
+            lastStep = step;
+
+            let buffer: Buffer = [];
+
+            buffer = Text({
+                buffer,
+                content: TEXT
+            });
+
+            buffer = Box({
+                buffer,
+                x: 2 + (step + 1),
+                y: 2,
+                width: 10,
+                height: 10
+            });
+
+            const { rows, cols } = setup({ buffer });
+
+            draw({ buffer, cols, rows });
+        }
+
+        frame = requestAnimationFrame(animate);
+    }
+
+    frame = requestAnimationFrame(animate);
 }
 
 function setup({ buffer }: SetupProps) {
@@ -250,12 +299,12 @@ function Box({ x, y, height, width, buffer }: BoxProps): Buffer {
                 ) {
                     buffer[i][j] = {
                         color: '#ff0000',
-                        shape: SHAPE
+                        shape: 'square'
                     };
                 } else {
                     buffer[i][j] = {
                         color: '#ff000050',
-                        shape: SHAPE
+                        shape: 'square'
                     };
                 }
             }

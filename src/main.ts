@@ -98,7 +98,10 @@ function render(): void {
 
     draw({ buffer, cols, rows });
 
-    // animation
+    animate({ x, y });
+}
+
+function animate({ x, y }: { x: number; y: number }) {
     const STEPS = 10;
     const STEPS_PER_SECOND = 20; // speed knob: 1 = 1 step/sec, 2 = 1 step/500ms
     const INTERVAL = 1000 / STEPS_PER_SECOND;

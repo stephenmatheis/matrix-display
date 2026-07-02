@@ -58,6 +58,7 @@ const GLYPH_GAP_X = 1;
 const GLYPH_GAP_Y = 1;
 const CELL_SIZE = DOT_SIZE + GAP;
 const RADIUS = DOT_SIZE / 2;
+const SHAPE: Shape = 'circle';
 const PIXEL_COLOR = '#000000';
 const CELL_COLOR = '#d5d5d5';
 const EMPTY_COLOR = '#eeeeee';
@@ -193,7 +194,23 @@ function paint({ row, col, cell }: PaintProps) {
 
     if (!cell) {
         ctx.fillStyle = EMPTY_COLOR;
-        ctx.fillRect(dotX, dotY, DOT_SIZE, DOT_SIZE);
+
+        switch (SHAPE) {
+            case 'square':
+            default:
+                ctx.fillRect(dotX, dotY, DOT_SIZE, DOT_SIZE);
+                break;
+            case 'circle':
+                ctx.beginPath();
+                ctx.arc(dotX + RADIUS, dotY + RADIUS, RADIUS, 0, Math.PI * 2);
+                ctx.fill();
+                break;
+            case 'rounded':
+                ctx.beginPath();
+                ctx.roundRect(dotX, dotY, DOT_SIZE, DOT_SIZE, RADIUS * 0.35);
+                ctx.fill();
+                break;
+        }
 
         return;
     }
@@ -255,7 +272,7 @@ function Text({ content, buffer }: TextProps): Buffer {
         for (let j = 0; j < numberOfColumnsToRender; j++) {
             buffer[i][j] = {
                 color: EMPTY_COLOR,
-                shape: 'square',
+                shape: SHAPE,
             };
         }
     }
@@ -273,7 +290,7 @@ function Text({ content, buffer }: TextProps): Buffer {
 
                     buffer[offsetY + row][offsetX + col] = {
                         color: bit === 1 ? PIXEL_COLOR : CELL_COLOR,
-                        shape: 'square',
+                        shape: SHAPE,
                     };
                 }
             }
@@ -299,12 +316,12 @@ function Box({ x, y, height, width, buffer }: BoxProps): Buffer {
                 ) {
                     buffer[i][j] = {
                         color: '#ff0000',
-                        shape: 'square',
+                        shape: SHAPE,
                     };
                 } else {
                     buffer[i][j] = {
                         color: '#ffcfcf',
-                        shape: 'square',
+                        shape: SHAPE,
                     };
                 }
             }

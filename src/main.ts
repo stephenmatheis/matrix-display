@@ -6,41 +6,41 @@ type Shape = 'circle' | 'rounded' | 'square';
 type Cell = {
     color: string;
     shape: Shape;
-}
+};
 
 type Buffer = Cell[][];
 
 type TextProps = {
     content: string[];
     buffer: Buffer;
-}
+};
 
 type BoxProps = {
     x: number;
     y: number;
     height: number;
     width: number;
-    buffer: Buffer
-}
+    buffer: Buffer;
+};
 
 type SetupProps = {
     buffer: Buffer;
-}
+};
 
 type DrawProps = {
     buffer: Buffer;
     rows: number;
     cols: number;
-}
+};
 
 type PaintProps = {
     row: number;
     col: number;
     cell: Cell;
-}
+};
 
-const DOT_SIZE = 16;
-const GAP = 2;
+const DOT_SIZE = 8;
+const GAP = 1;
 const PADDING = 0;
 const CANVAS_PADDING_TOP = 1;
 const CANVAS_PADDING_BOTTOM = 1;
@@ -59,22 +59,19 @@ const GLYPH_GAP_Y = 1;
 const CELL_SIZE = DOT_SIZE + GAP;
 const RADIUS = DOT_SIZE / 2;
 const PIXEL_COLOR = '#000000';
-const CELL_COLOR = '#cccccc';
+const CELL_COLOR = '#d5d5d5';
 const EMPTY_COLOR = '#eeeeee';
 const BACKGROUND = '#ffffff';
 const TEXT = [
-    '─│┐┌┘└',     // box drawing
+    '─│┐┌┘└', // box drawing
     '0123456789', // numbers
-    'ABCDEFGHIJ', // uppercase
-    'KLMNOPQRST',
-    'UVWXYZ',
-    'abcdefghij', // lowercase
-    'klmnopqrst',
-    'uvwxyz',
-    '.,:;!?·•*#', // punctuation
-    '/\\-–―_(){}',
-    '[]"\'@|$%+=',
-    '><',
+    'ABCDEFGHIJKLM', // uppercase
+    'NOPQRSTUVWXYZ',
+    'abcdefghijklm', // lowercase
+    'nopqrstuvwxyz',
+    '.,:;!?·•*@#/\\', // punctuation
+    '-–―_><%+="\'|$',
+    '()[]{}',
 ];
 
 function render(): void {
@@ -82,15 +79,18 @@ function render(): void {
 
     buffer = Text({
         buffer,
-        content: TEXT
+        content: TEXT,
     });
+
+    const x = 0;
+    const y = 0;
 
     buffer = Box({
         buffer,
-        x: 2,
-        y: 2,
+        x,
+        y,
         width: 10,
-        height: 10
+        height: 10,
     });
 
     const { rows, cols } = setup({ buffer });
@@ -99,11 +99,11 @@ function render(): void {
 
     // animation
     const STEPS = 10;
-    const STEPS_PER_SECOND = 2; // speed knob: 1 = 1 step/sec, 2 = 1 step/500ms, etc.
+    const STEPS_PER_SECOND = 20; // speed knob: 1 = 1 step/sec, 2 = 1 step/500ms
     const INTERVAL = 1000 / STEPS_PER_SECOND;
 
     let startTime: number | null = null;
-    let lastStep = -1;
+    let lastStep = 0;
     let frame: number;
 
     function animate(timestamp: number) {
@@ -126,15 +126,15 @@ function render(): void {
 
             buffer = Text({
                 buffer,
-                content: TEXT
+                content: TEXT,
             });
 
             buffer = Box({
                 buffer,
-                x: 2 + (step + 1),
-                y: 2,
+                x: x + (step + 1),
+                y: y + (step + 1),
                 width: 10,
-                height: 10
+                height: 10,
             });
 
             const { rows, cols } = setup({ buffer });
@@ -153,7 +153,7 @@ function setup({ buffer }: SetupProps) {
     const minRows = Math.floor(window.innerHeight / CELL_SIZE) - PADDING;
     const minCols = Math.floor(window.innerWidth / CELL_SIZE) - PADDING;
     const contentRows = buffer.length;
-    const contentCols = Math.max(...buffer.map(l => l.length));
+    const contentCols = Math.max(...buffer.map((l) => l.length));
     const cols = Math.max(minCols, contentCols);
     const rows = Math.max(minRows, contentRows);
 
@@ -165,8 +165,9 @@ function setup({ buffer }: SetupProps) {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     return {
-        rows, cols
-    }
+        rows,
+        cols,
+    };
 }
 
 function draw({ buffer, rows, cols }: DrawProps) {
@@ -175,7 +176,7 @@ function draw({ buffer, rows, cols }: DrawProps) {
             paint({
                 col,
                 row,
-                cell: buffer[row]?.[col]
+                cell: buffer[row]?.[col],
             });
         }
     }
@@ -214,7 +215,6 @@ function paint({ row, col, cell }: PaintProps) {
             ctx.roundRect(dotX, dotY, DOT_SIZE, DOT_SIZE, RADIUS * 0.35);
             ctx.fill();
             break;
-
     }
 }
 
@@ -255,7 +255,7 @@ function Text({ content, buffer }: TextProps): Buffer {
         for (let j = 0; j < numberOfColumnsToRender; j++) {
             buffer[i][j] = {
                 color: EMPTY_COLOR,
-                shape: 'square'
+                shape: 'square',
             };
         }
     }
@@ -273,7 +273,7 @@ function Text({ content, buffer }: TextProps): Buffer {
 
                     buffer[offsetY + row][offsetX + col] = {
                         color: bit === 1 ? PIXEL_COLOR : CELL_COLOR,
-                        shape: 'square'
+                        shape: 'square',
                     };
                 }
             }
@@ -292,19 +292,19 @@ function Box({ x, y, height, width, buffer }: BoxProps): Buffer {
         for (let j = 0; j < width + x; j++) {
             if (i >= y && j >= x) {
                 if (
-                    i === y ||              // top
+                    i === y || // top
                     i === y + height - 1 || // bottom
-                    j == x ||               // left
-                    j === x + width - 1     // right
+                    j == x || // left
+                    j === x + width - 1 // right
                 ) {
                     buffer[i][j] = {
                         color: '#ff0000',
-                        shape: 'square'
+                        shape: 'square',
                     };
                 } else {
                     buffer[i][j] = {
-                        color: '#ff000050',
-                        shape: 'square'
+                        color: '#ffcfcf',
+                        shape: 'square',
                     };
                 }
             }
